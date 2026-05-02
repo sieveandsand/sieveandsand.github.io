@@ -1,0 +1,58 @@
+baseURL = "https://sieveandsand.github.io/"
+languageCode = "en-us"
+title = "sieveandsand"
+theme = "PaperMod"
+
+enableRobotsTXT = true
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+
+[minify]
+  disableXML = true
+  minifyOutput = true
+
+[params]
+  env = "production"
+  title = "sieveandsand"
+  description = "Independent security research — embedded systems, firmware, cryptography"
+  author = "Feifan Qiao"
+  defaultTheme = "auto"
+  ShowReadingTime = true
+  ShowShareButtons = false
+  ShowPostNavLinks = true
+  ShowCodeCopyButtons = true
+  ShowToc = true
+  TocOpen = false
+  ShowBreadCrumbs = true
+  ShowWordCount = true
+
+  [params.homeInfoParams]
+    Title = "sieveandsand"
+    Content = "Embedded security research. Opinions and work here are my own and not affiliated with my employer."
+
+  [[params.socialIcons]]
+    name = "github"
+    url = "https://github.com/sieveandsand"
+
+[menu]
+  [[menu.main]]
+    identifier = "hardware"
+    name = "hardware"
+    url = "/hardware/"
+    weight = 10
+  [[menu.main]]
+    identifier = "firmware"
+    name = "firmware"
+    url = "/firmware/"
+    weight = 20
+  [[menu.main]]
+    identifier = "cryptography"
+    name = "cryptography"
+    url = "/cryptography/"
+    weight = 30
+  [[menu.main]]
+    identifier = "about"
+    name = "about"
+    url = "/about/"
+    weight = 40
