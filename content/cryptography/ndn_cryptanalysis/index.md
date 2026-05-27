@@ -13,7 +13,7 @@ math = true
 
 My first encounter with cryptanalysis, particularly differential cryptanalysis, was Lukas Stennes's *[Breaking NATO Radio Encryption](https://youtu.be/v8Pma5Bdvoo?si=rudvrIG34ez35KeA)* talk at the 38th Chaos Communication Congress in 2024. Stennes presented an attack on **HALFLOOP-24**, a tweakable block cipher used by NATO and the US military to protect the automatic link establishment protocol in high-frequency radio. By introducing a chosen difference in the tweak, Stennes and his team built an attack that skips the first 5 of HALFLOOP-24's 10 rounds. As a result, key recovery time was reduced from roughly 500 years of intercepted traffic to about 2 hours.
 
-That talk pulled me back into a question that I've been thinking about for a while: how much should we trust block ciphers purpose-built for embedded and IoT devices? As security engineers, we've been taught from day one to use only FIPS-approved algorithms. Yet, there're new ciphers coming out claiming to optimize for embedded device, while achieving the same level of security. The block cipher I'm walking through below is, admittedly, a cherry-picked example. However, it shows how poorly validated these ciphers are and proves us a good reason to not deviated from FIPS-approved algorithms.
+That talk pulled me back into a question that I've been thinking about for a while: how much should we trust block ciphers purpose-built for embedded and IoT devices? As security engineers, we've been taught from day one to use only FIPS-approved algorithms. Yet, there're new ciphers coming out claiming to optimize for embedded devices, while achieving the same level of security. The block cipher I'm walking through below is, admittedly, a cherry-picked example. However, it shows how poorly validated these ciphers are and gives us a good reason to not deviated from FIPS-approved algorithms.
 
 ## NDN, An Ultra-Lightweight Block Cipher
 
@@ -52,11 +52,11 @@ Meanwhile, in the second branch, the original 16-bit input passes directly throu
 
 ## The Differential Trail
 
-Let's take the $\Delta P=(0x0000, 0x0001, 0x0000, 0x0000)$ test vector from the paper. For this $\Delta P$, sub-blocks $P_{1-1}$, $P_{1-3}$, and $P_{1-4}$ all receive a zero difference, so no active S-boxes from these sub-blocks in the first round. The sub-block $P_{1-2}$ is the only one that has a a non-zero difference. 
+Let's take the $\Delta P=(0x0000, 0x0002, 0x0000, 0x0000)$ test vector. For this $\Delta P$, sub-blocks $P_{1-1}$, $P_{1-3}$, and $P_{1-4}$ all receive a zero difference, so no active S-boxes from these sub-blocks in the first round. The sub-block $P_{1-2}$ is the only one that has a non-zero difference. 
 
-In the **first** round, $P_{1-2}$ is fed through a bitwise NOT step and is immediately XOR'd with the output of the left F function in the first around. No F functions are affected in the first round, thus no active S-boxes.
+In the **first** round, $P_{1-2}$ is fed through a bitwise NOT step and is immediately XOR'd with the output of the left F function in the first round. No F functions are affected in the first round, thus no active S-boxes.
 
-In the **second** round, the difference is swapped to sub-block $P_{2-4}$ and fed into the F function on the right. Since there is only a one bit difference, only one S-box is activated. However, F function also has a diffusion step, so after the F function, the single-bit difference is propagated to 3 nibbles. 
+In the **second** round, the difference is swapped to sub-block $P_{2-4}$ and fed into the F function on the right. Since there is only a one bit difference, only one S-box is activated. However, F function also has a diffusion step, so after the F function, the single-bit difference is propagated to 3 nibbles. Additionally, this trail assumes the round key bit is 1, selecting BT2 for the bit transformation.
 
 In the **third** round, the single-bit difference turns into a 3 nibble difference. It is swapped into $P_{3-1}$ and goes into the left F function. Since there is a 3 nibble difference, 3 S-boxes are activated for this round.
 
@@ -68,13 +68,13 @@ By tracking the exact path of the difference, we can clearly see that it avoids 
 
 | **Step**                     | **Round 1**                | **Round 2**                            | **Round 3**                                        |
 | ---------------------------- | -------------------------- | -------------------------------------- | -------------------------------------------------- |
-| **Entering State $\Delta$**  | $(0, \text{0x0001}, 0, 0)$ | $(0, 0, 0, \text{0x0001})$             | $(\text{0x1023}, 0, \text{0x0001}, 0)$             |
+| **Entering State $\Delta$**  | $(0, \text{0x0002}, 0, 0)$ | $(0, 0, 0, \text{0x0002})$             | $(\text{0x0446}, 0, \text{0x0002}, 0)$             |
 | **Active S-boxes ($F_l$)**   | $0$                        | $0$                                    | $3$                                                |
 | **Active S-boxes ($F_r$)**   | $0$                        | $1$                                    | $0$                                                |
-| **Post-Swap State $\Delta$** | $(0, 0, 0, \text{0x0001})$ | $(\text{0x1023}, 0, \text{0x0001}, 0)$ | $(\text{0x0001}, \text{0x1023}, 0, \text{0x0363})$ |
+| **Post-Swap State $\Delta$** | $(0, 0, 0, \text{0x0002})$ | $(\text{0x0446}, 0, \text{0x0002}, 0)$ | $(\text{0x0002}, \text{0x0446}, 0, \text{0x2840})$ |
 | **Total Active S-boxes**     | **0**                      | **1**                                  | **3**                                              |
 
-> **Note:** The above calculation assumes the round key bit value is 0 for the bit transformation table inside $F$-functions. If the round key bit value is changed to 1, then we will have 5 total active S-boxes instead of 4.
+> **Note:** The above calculation requires the round key bit in round 2 to be 1 so that BT2 is selected. If key bit is 0, the F output has 4 active nibbles, giving 5 total active S-boxes.
 
 ## So What's the Impact?
 
