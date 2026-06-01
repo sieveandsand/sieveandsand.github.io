@@ -23,6 +23,7 @@ buildExpired = false
 
 [params]
   env = "production"
+  mainSections = ["hardware", "firmware", "cryptography"]
   title = "sieveandsand"
   description = "Independent security research — embedded systems, firmware, cryptography"
   author = "Feifan Qiao"
