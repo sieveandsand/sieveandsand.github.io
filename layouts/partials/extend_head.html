@@ -12,3 +12,11 @@
     throwOnError: false
   });"></script>
 {{- end }}
+
+{{- /* GoatCounter analytics — loads only on the production build, not `hugo server` */}}
+{{- with site.Params.goatcounter }}
+{{- if hugo.IsProduction }}
+<script data-goatcounter="https://{{ . }}.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+{{- end }}
+{{- end }}
